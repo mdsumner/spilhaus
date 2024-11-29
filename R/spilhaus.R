@@ -1,7 +1,23 @@
-library(sf)
 
-from_lonlat_to_spilhaus_xy <- function(longitude, latitude){
+#' Project points to Spilhaus
+#'
+#' Input a matrix of longitude latitude coordinates and return Spilhaus coordinates. 
+#' 
+#' Note that this transformation is not available via standard libraries, and was
+#' implemented in R and Python by Ricardo T. Lemos. 
+#' 
+#' @param x matrix of longlat 
+#'
+#' @return matrix of projected coordinates
+#' @export
+#'
+#' @examples
+#' spilhaus(cbind(0, 0))
+spilhaus <- function(x){
 
+  longitude <- x[,1L, drop = TRUE]
+  latitude <- x[,2L, drop = TRUE]
+  
   # constants (https://github.com/OSGeo/PROJ/issues/1851)
   e = sqrt(0.00669438)
   lat_center_deg = -49.56371678
@@ -40,105 +56,34 @@ from_lonlat_to_spilhaus_xy <- function(longitude, latitude){
 
   # projects transformed coordinates onto plane (Adams World in a Square II)
   adams_ws2 = "+proj=adams_ws2 +no_defs +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m"
-  projected = sf_project(from=sf::st_crs(4326), to=adams_ws2, pts=cbind(lon_s, lat_s))
+  projected = reproj::reproj_xy(cbind(lon_s, lat_s), source = "EPSG:4326", target = adams_ws2)
   adams_x = projected[,1]
   adams_y = projected[,2]
   spilhaus_x = -(adams_x + adams_y) / sqrt(2)
   spilhaus_y = (adams_x - adams_y) / sqrt(2)
 
-  return(cbind(spilhaus_x, spilhaus_y)) #, adams_x, adams_y, lon_s, lat_s))
-}
-
-make_spilhaus_xy_gridpoints <- function(spilhaus_res=1000) {
-  # regular grid of points in Spilhaus map
-  extreme = 11825474
-  m = seq(-extreme, extreme, len=spilhaus_res)
-  spilhaus_df = expand.grid(x=m, y=m)
-  return(spilhaus_df)
-}
-
-flip1 = function(x) {
-  res = as.integer(sqrt(length(x)))
-  return(c(t(matrix(nrow=res, ncol=res, x)[,res:1])))
-}
-flip2 = function(x) {
-  res = as.integer(sqrt(length(x)))
-  return(c(t(matrix(nrow=res, ncol=res, x))[,res:1]))
+  return(cbind(x = spilhaus_x, y = spilhaus_y)) #, adams_x, adams_y, lon_s, lat_s))
 }
 
 
-
-pretify_spilhaus_df <- function(spilhaus_df) {
-
-    spilhaus_x = spilhaus_df$x
-    spilhaus_y = spilhaus_df$y
-    spilhaus_z = spilhaus_df$z
-    spilhaus_l = spilhaus_df$l
-
-    extreme = 11825474
-
-    # augmented grid points
-    aug_x = c(
-      spilhaus_x,
-      spilhaus_x - 2 * extreme,
-      spilhaus_x + 2 * extreme,
-      spilhaus_x,
-      spilhaus_x
-    )
-    aug_y = c(
-      spilhaus_y,
-      spilhaus_y,
-      spilhaus_y,
-      spilhaus_y - 2 * extreme,
-      spilhaus_y + 2 * extreme
-    )
-    aug_z = c(
-      spilhaus_z,
-      flip1(spilhaus_z),
-      flip1(spilhaus_z),
-      flip2(spilhaus_z),
-      flip2(spilhaus_z)
-    )
-    aug_l = c(
-      spilhaus_l,
-      flip1(spilhaus_l),
-      flip1(spilhaus_l),
-      flip2(spilhaus_l),
-      flip2(spilhaus_l)
-    )
-
-    cutpoint = 1.1 * extreme
-    keep = !(
-      aug_l
-      | (aug_x < -cutpoint)
-      | (aug_x > cutpoint)
-      | (aug_y < -cutpoint)
-      | (aug_y > cutpoint)
-      | (aug_y > 1.089e7 - 0.176 * aug_x)
-      | (aug_x < -0.984e7 - 0.565 * aug_y)
-      | (aug_y < -1.378e7 + 0.46 * aug_x)
-      | (aug_x > 1.274e7 + 0.172 * aug_y)
-      | (aug_y > 1e7 - 0.5 * aug_x)
-      | (aug_y > 2.3e7 + aug_x)
-      | ((aug_y < 0.29e7) & (aug_x < -1.114e7))
-      | ((aug_y < 0.39e7) & (aug_x < -1.17e7))
-      | ((aug_y < -1.21e7) & (aug_x > 0.295e7))
-      | ((aug_y < -1.2e7) & (aug_x > 0.312e7))
-      | ((aug_y < -1.16e7) & (aug_x > 0.4e7))
-      | ((aug_y < -1.11e7) & (aug_x > 0.45e7))
-    )
-
-    pretty_spilhaus_df = data.frame(
-      x=aug_x[keep],
-      y=aug_y[keep],
-      z=aug_z[keep]
-    )
-    pretty_spilhaus_df = pretty_spilhaus_df[!duplicated(pretty_spilhaus_df[c(1,2)]),]
-
-    return(pretty_spilhaus_df)
-}
-
-from_spilhaus_xy_to_lonlat <- function(spilhaus_x, spilhaus_y) {
+#' Project points from Spilhaus to longlat 
+#'
+#' Input a matrix of Spilhaus coordinates and return longlat coordinates. 
+#' 
+#' Note that this transformation is not available via standard libraries, and was
+#' implemented in R and Python by Ricardo T. Lemos. 
+#' 
+#' @param x  matrix of coordinates in Spilhaus 
+#'
+#' @return matrix of longlat coordinates
+#' @export
+#'
+#' @examples
+#' spilhaus_lonlat(cbind(0, 0))
+spilhaus_lonlat <- function(x) {
+  spilhaus_x <- x[,1L, drop = TRUE]
+  spilhaus_y <- x[,2L, drop = TRUE]
+  
   # constants
   e = sqrt(0.00669438)
   lat_center_deg = -49.56371678
@@ -161,13 +106,8 @@ from_spilhaus_xy_to_lonlat <- function(spilhaus_x, spilhaus_y) {
   adams_y = - (spilhaus_y + spilhaus_x) * sqrt(2) / 2
 
   adams_ws2 = "+proj=adams_ws2 +no_defs +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m"
-  projection_fun = function(x, y) {
-    tryCatch(
-      sf_project(from=adams_ws2, to=sf::st_crs(4326), pts=c(x, y)),
-      error=function(e) c(NA, NA)
-    )
-  }
-  projected = sf_project(from=adams_ws2, to=sf::st_crs(4326), pts=cbind(adams_x, adams_y), keep = TRUE, warn = FALSE)
+
+  projected = reproj::reproj_xy(cbind(adams_x, adams_y), source = adams_ws2, target = "EPSG:4326")
   lon_s = projected[,1]
   lat_s = projected[,2]
 
@@ -197,5 +137,5 @@ from_spilhaus_xy_to_lonlat <- function(spilhaus_x, spilhaus_y) {
   longitude = ((lon * 180 / pi + 180) %% 360) - 180
   latitude = lat * 180 / pi
 
-  return(cbind(longitude, latitude))
+  return(cbind(x = longitude, y = latitude))
 }

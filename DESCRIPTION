@@ -1,0 +1,15 @@
+Package: spilhaus
+Title: Covert Spilhaus Coordinates
+Version: 0.0.1
+Authors@R: c(
+ person("Michael D.", "Sumner", , "mdsumner@gmail.com", role = c("aut", "cre")), 
+ person("Ricardo T.", "Lemos", role = c("aut", "cph"), comment = "wrote the code implementation at rtlemos/spilhaus")
+     )
+Description: Convert between Spilhaus projection and longlat. 
+License: GPL (>= 3) + file LICENSE
+Encoding: UTF-8
+Language: es
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+    reproj
