@@ -20,7 +20,12 @@ knitr::opts_chunk$set(
 
 The goal of spilhaus is to convert coordinates to and from Spilhaus projection. 
 
-Note that this R package was adapted from code available at https://github.com/rtlemos/spilhaus, we took the functions `from_lonlat_to_spilhaus_xy` and `from_spilhaus_xy_to_lonlat`. 
+Note that this R package was adapted from code available at https://github.com/rtlemos/spilhaus, we took the functions `from_lonlat_to_spilhaus_xy` and `from_spilhaus_xy_to_lonlat` and created
+
+- `spilhaus(x)` convert matrix 'x' longitude latitude to Spilhaus xy
+- `spilhaus(x)` convert matrix 'x' Spilhaus xy to longitude latitude. 
+
+
 
 
 
@@ -68,6 +73,7 @@ topo <- project(rast(dsn), rast(res = .25), by_util = TRUE)
 
 r <- setValues(r0, extract(topo, spilhaus_lonlat(xyFromCell(r0, seq_len(ncell(r0)))))[,1L])
 plot(r)
+contour(r, add = T, levels = 0)
 ```
 
 

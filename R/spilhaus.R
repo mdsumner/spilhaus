@@ -15,6 +15,9 @@
 #' spilhaus(cbind(0, 0))
 spilhaus <- function(x){
 
+  op <- options(warn  = -1)
+  on.exit(options(op), add = TRUE)
+  
   longitude <- x[,1L, drop = TRUE]
   latitude <- x[,2L, drop = TRUE]
   
@@ -81,6 +84,10 @@ spilhaus <- function(x){
 #' @examples
 #' spilhaus_lonlat(cbind(0, 0))
 spilhaus_lonlat <- function(x) {
+  
+  op <- options(warn  = -1)
+  on.exit(options(op), add = TRUE)
+  
   spilhaus_x <- x[,1L, drop = TRUE]
   spilhaus_y <- x[,2L, drop = TRUE]
   

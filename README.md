@@ -11,7 +11,11 @@ projection.
 
 Note that this R package was adapted from code available at
 <https://github.com/rtlemos/spilhaus>, we took the functions
-`from_lonlat_to_spilhaus_xy` and `from_spilhaus_xy_to_lonlat`.
+`from_lonlat_to_spilhaus_xy` and `from_spilhaus_xy_to_lonlat` and
+created
+
+- `spilhaus(x)` convert matrix ‘x’ longitude latitude to Spilhaus xy
+- `spilhaus(x)` convert matrix ‘x’ Spilhaus xy to longitude latitude.
 
 ## Installation
 
@@ -60,15 +64,8 @@ topo <- project(rast(dsn), rast(res = .25), by_util = TRUE)
 
 
 r <- setValues(r0, extract(topo, spilhaus_lonlat(xyFromCell(r0, seq_len(ncell(r0)))))[,1L])
-#> Warning in sin(lat_s_rad): NaNs produced
-#> Warning in cos(lat_s_rad): NaNs produced
-#> Warning in cos(lon_s_rad - beta): NaNs produced
-#> Warning in cos(lat_s_rad): NaNs produced
-#> Warning in sin(lon_s_rad - beta): NaNs produced
-#> Warning in cos(lat_s_rad): NaNs produced
-#> Warning in cos(lon_s_rad - beta): NaNs produced
-#> Warning in sin(lat_s_rad): NaNs produced
 plot(r)
+contour(r, add = T, levels = 0)
 ```
 
 <img src="man/figures/README-raster-1.png" width="100%" />
@@ -84,14 +81,6 @@ sst <- project(rast(dsn), rast(res = 0.25), by_util = TRUE)
 
 
 r <- setValues(r0, extract(sst, spilhaus_lonlat(xyFromCell(r0, seq_len(ncell(r0)))))[,1L])
-#> Warning in sin(lat_s_rad): NaNs produced
-#> Warning in cos(lat_s_rad): NaNs produced
-#> Warning in cos(lon_s_rad - beta): NaNs produced
-#> Warning in cos(lat_s_rad): NaNs produced
-#> Warning in sin(lon_s_rad - beta): NaNs produced
-#> Warning in cos(lat_s_rad): NaNs produced
-#> Warning in cos(lon_s_rad - beta): NaNs produced
-#> Warning in sin(lat_s_rad): NaNs produced
 plot(r, background = "black")
 ```
 
